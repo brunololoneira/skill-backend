@@ -9,14 +9,20 @@ router.post('/',(req, res) => {
     if (!idUsuario || !emocion || !timestamp) { //Si falta alguno que no sea causa, devuelvo un error
         return res.status(400).json({ error: 'Faltan campos obligatorios: idUsuario, emocion, timestamp.' });
     }
-    const sql = `INSERT INTO emociones (idUsuario, timestamp, emocion, causa) VALUES (?, ?, ?, ?)`; //SQL para emocion registrada
-    const values = [idUsuario, timestamp, emocion, causa || null];//si no hay casa entrego null
+
+    const VENTANA_MS = 3000;
+    const bucket = Math.floor(Date.now() / VENTANA_MS);
+
+    const sql = `INSERT OR IGNORE INTO emociones (idUsuario, timestamp, emocion, causa, bucket)
+    VALUES (?, ?, ?, ?, ?)`; //SQL para emocion registrada
+    const values = [idUsuario, timestamp, emocion, causa || null, bucket];//si no hay causa entrego null
 
     db.run(sql, values, function(err) { //Utilizado para modificar base de datos (INSERT,UPDATE o DELETE), le paso la consulta
         if (err) {
             console.error('Error al insertar emoción:', err.message);
             return res.status(500).json({ error: 'Error al insertar la emoción.' });
         }
+        const deduped = this.changes === 0;
         res.status(201).json({ message: 'Emoción registrada correctamente.' });
         });
     });
