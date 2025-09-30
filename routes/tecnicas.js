@@ -10,7 +10,7 @@ router.post('/',(req, res) => {
         return res.status(400).json({ error: 'Faltan campos obligatorios: idUsuario, timestamp, tecnica.' });
     }
     const VENTANA_MS = 5000;
-    const idVentanta = Math.floor(Date.now() / VENTANA_MS);
+    const idVentana = Math.floor(Date.now() / VENTANA_MS);
     const sql = `
     INSERT INTO tecnicas (idUsuario, timestamp, tecnica, idVentanta)
     VALUES (?, ?, ?, ?)
