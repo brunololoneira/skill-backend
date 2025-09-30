@@ -9,8 +9,16 @@ router.post('/',(req, res) => {
     if (!idUsuario || !tecnica || !timestamp) { //Si falta alguno le devuelvo un error
         return res.status(400).json({ error: 'Faltan campos obligatorios: idUsuario, timestamp, tecnica.' });
     }
-    const sql = `INSERT INTO tecnicas (idUsuario, timestamp, tecnica) VALUES (?, ?, ?)`; //Consulta SQL para emocion registrada
-    const values = [idUsuario, timestamp, tecnica];
+    const VENTANA_MS = 5000;
+    const idVentanta = Math.floor(Date.now() / VENTANA_MS);
+    const sql = `
+    INSERT INTO tecnicas (idUsuario, timestamp, tecnica, idVentanta)
+    VALUES (?, ?, ?, ?)
+    ON CONFLICT(idUsuario, idVentanta) DO UPDATE SET
+      tecnica   = excluded.tecnica,
+      timestamp = excluded.timestamp
+  `;
+    const values = [idUsuario, timestamp, tecnica, idVentana];
 
     db.run(sql, values, function(err) { //Utilizado para modificar base de datos (INSERT,UPDATE o DELETE), le paso la consulta
         if (err) {
