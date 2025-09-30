@@ -11,11 +11,17 @@ router.post('/',(req, res) => {
     }
 
     const VENTANA_MS = 5000;
-    const bucket = Math.floor(Date.now() / VENTANA_MS);
+    const idVentana = Math.floor(Date.now() / VENTANA_MS);
 
-    const sql = `INSERT OR IGNORE INTO emociones (idUsuario, timestamp, emocion, causa, bucket)
-    VALUES (?, ?, ?, ?, ?)`; //SQL para emocion registrada
-    const values = [idUsuario, timestamp, emocion, causa || null, bucket];//si no hay causa entrego null
+    const sql = `
+    INSERT INTO emociones (idUsuario, timestamp, emocion, causa, idVentana)
+    VALUES (?, ?, ?, ?, ?)
+    ON CONFLICT(idUsuario, idVentana) DO UPDATE SET
+      emocion   = excluded.emocion,
+      causa     = excluded.causa,
+      timestamp = excluded.timestamp
+  `;
+    const values = [idUsuario, timestamp, emocion, causa || null, idVentana];//si no hay causa entrego null
 
     db.run(sql, values, function(err) { //Utilizado para modificar base de datos (INSERT,UPDATE o DELETE), le paso la consulta
         if (err) {
