@@ -10,7 +10,7 @@ router.post('/',(req, res) => {
         return res.status(400).json({ error: 'Faltan campos obligatorios: idUsuario, emocion, timestamp.' });
     }
 
-    const VENTANA_MS = 3000;
+    const VENTANA_MS = 5000;
     const bucket = Math.floor(Date.now() / VENTANA_MS);
 
     const sql = `INSERT OR IGNORE INTO emociones (idUsuario, timestamp, emocion, causa, bucket)
