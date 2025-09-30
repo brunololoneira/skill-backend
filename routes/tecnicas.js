@@ -12,9 +12,9 @@ router.post('/',(req, res) => {
     const VENTANA_MS = 5000;
     const idVentana = Math.floor(Date.now() / VENTANA_MS);
     const sql = `
-    INSERT INTO tecnicas (idUsuario, timestamp, tecnica, idVentanta)
+    INSERT INTO tecnicas (idUsuario, timestamp, tecnica, idVentana)
     VALUES (?, ?, ?, ?)
-    ON CONFLICT(idUsuario, idVentanta) DO UPDATE SET
+    ON CONFLICT(idUsuario, idVentana) DO UPDATE SET
       tecnica   = excluded.tecnica,
       timestamp = excluded.timestamp
   `;
