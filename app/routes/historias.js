@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { db } = require('../app/models/db'); // ajusta la ruta relativa si tu árbol es distinto
+const { db } = require('../models/db'); // ajusta la ruta relativa si tu árbol es distinto
 
 
 router.post('/',(req, res) => {
