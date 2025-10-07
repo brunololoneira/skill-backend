@@ -10,6 +10,7 @@ const usuariosRoutes  = require('./routes/usuarios');
 const emocionesRoutes = require('./routes/emociones');
 const historiasRoutes = require('./routes/historias');
 const tecnicasRoutes  = require('./routes/tecnicas');
+const userRoutes = require('./routes/user.routes');
 
 const app = express();
 
@@ -33,5 +34,6 @@ app.use('/usuarios',  usuariosRoutes);
 app.use('/emociones', emocionesRoutes);
 app.use('/historias', historiasRoutes);
 app.use('/tecnicas',  tecnicasRoutes);
+app.use('/users', userRoutes);
 
 module.exports = app;

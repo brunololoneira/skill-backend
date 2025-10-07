@@ -10,3 +10,6 @@ npm-debug.log*
 
 # Sistema
 .DS_Store
+
+# Resumen
+resumen/
