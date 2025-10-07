@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const sqlite3 = require('sqlite3').verbose();
-const db = new sqlite3.Database('./db/bd_autismo.db');
+const { db } = require('../app/models/db'); // ajusta la ruta relativa si tu árbol es distinto
+
 
 router.post('/',(req, res) => {
     const { idUsuario, timestamp, historiaId } = req.body; //Extraigo los parámetros de la petición y los almaceno en variables

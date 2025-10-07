@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const sqlite3 = require('sqlite3').verbose();
-const db = new sqlite3.Database('./db/bd_autismo.db');
+const { db } = require('../app/models/db'); // ajusta la ruta relativa si tu árbol es distinto
+
 
 // Ruta GET /usuarios → Devuelve todos los usuarios
 router.get('/', (req, res) => {
