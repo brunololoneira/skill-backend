@@ -1,27 +1,43 @@
+// app/controllers/tutorias.controller.js
 const { db } = require('../models/db');
 
-async function associateTutelado(req, res) {
-  const idResponsable = req.user?.sub;            // del JWT
-  const { idTutelado } = req.body;
-
-  if (!Number.isInteger(idTutelado)) {
-    return res.status(400).json({ error: 'idTutelado inválido' });
-  }
-
-  // Verificar roles en usuarios
-  const getUser = (id) => new Promise((resolve, reject) =>
+function getUserById(id) {
+  return new Promise((resolve, reject) =>
     db.get('SELECT idUsuario, tipo FROM usuarios WHERE idUsuario=?', [id],
-      (e, row) => e ? reject(e) : resolve(row)));
+      (e, row) => e ? reject(e) : resolve(row))
+  );
+}
+
+// verificacion de credenciales
+function verificarTuteladoCred(idTutelado, pin) {
+  return new Promise((resolve, reject) =>
+    db.get(
+      'SELECT idUsuario, tipo FROM usuarios WHERE idUsuario=? AND PIN=?',
+      [idTutelado, pin],
+      (e, row) => e ? reject(e) : resolve(row) // row solo existe si PIN coincide
+    )
+  );
+}
+
+async function crearTutoria(req, res) {
+  const idResponsable = req.user?.sub; // del JWT
+  const idTutelado = req.body.idTutelado;
+  const pin = req.body.pin;            
 
   try {
-    const resp = await getUser(idResponsable);
-    const tut  = await getUser(idTutelado);
-    if (!resp || resp.tipo !== 'responsable') return res.status(403).json({ error: 'No eres responsable' });
-    if (!tut  || tut.tipo  !== 'tutelado')    return res.status(400).json({ error: 'El tutelado no existe o no es tutelado' });
+    const resp = await getUserById(idResponsable);
+    if (!resp || resp.tipo !== 'responsable') {
+      return res.status(403).json({ error: 'No eres responsable' });
+    }
 
-    // Evitar duplicados (recomendado índice único en tutorias (idResponsable,idTutelado))
+    const tut = await verificarTuteladoCred(idTutelado, pin);
+    if (!tut || tut.tipo !== 'tutelado') {
+      // No revelar si el fallo fue id o pin (mejor seguridad)
+      return res.status(401).json({ error: 'idTutelado o PIN inválidos' });
+    }
+    
     db.run(
-      `INSERT OR IGNORE INTO tutorias (idResponsable, idTutelado) VALUES (?, ?)`,
+      'INSERT OR IGNORE INTO tutorias (idResponsable, idTutelado) VALUES (?, ?)',
       [idResponsable, idTutelado],
       function (err) {
         if (err) return res.status(500).json({ error: 'Error insertando relación' });
@@ -30,11 +46,12 @@ async function associateTutelado(req, res) {
       }
     );
   } catch (e) {
+    console.error('Error creando tutoría:', e.message);
     return res.status(500).json({ error: 'Error interno' });
   }
 }
 
-async function myTutelados(req, res) {
+function listarMisTutelados(req, res) {
   const idResponsable = req.user?.sub;
   db.all(
     `SELECT u.idUsuario, u.nombre, u.tipo
@@ -45,9 +62,10 @@ async function myTutelados(req, res) {
     [idResponsable],
     (err, rows) => {
       if (err) return res.status(500).json({ error: 'Error consultando tutelados' });
-      return res.json(rows);
+      res.json(rows);
     }
   );
 }
 
-module.exports = { associateTutelado, myTutelados };
+
+module.exports = { crearTutoria, listarMisTutelados};
