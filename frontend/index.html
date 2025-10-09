@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prueba Frontend CalmaTea</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f6fb;
+      color: #333;
+      text-align: center;
+      padding-top: 50px;
+    }
+    h1 {
+      color: #0066cc;
+    }
+    button {
+      background-color: #0066cc;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #004c99;
+    }
+  </style>
+</head>
+<body>
+  <h1>Frontend CalmaTea funcionando 🎉</h1>
+  <p>Si ves este mensaje, Render está sirviendo los archivos estáticos correctamente.</p>
+
+  <button id="btn">Comprobar conexión con backend</button>
+  <p id="resultado"></p>
+
+  <script>
+    // 👇 cambia la URL por la de tu backend en Render
+    const API_URL = "https://skill-backend-ijg4.onrender.com";
+
+    document.getElementById('btn').addEventListener('click', async () => {
+      const salida = document.getElementById('resultado');
+      salida.textContent = "Comprobando...";
+      try {
+        const res = await fetch(`${API_URL}/health`);
+        const data = await res.json();
+        salida.textContent = `Backend responde: ${JSON.stringify(data)}`;
+      } catch (err) {
+        salida.textContent = "❌ Error al conectar con el backend";
+      }
+    });
+  </script>
+</body>
+</html>

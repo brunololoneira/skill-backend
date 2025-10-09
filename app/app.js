@@ -18,8 +18,9 @@ const app = express();
 app.use(cors());              // si quieres, restringe origin más adelante
 app.use(express.json());
 
-// Servir estáticos (ajuste de ruta porque app.js está en /app)
+// Servir estáticos 
 app.use('../images', express.static(path.join(__dirname, '..', 'images')));
+app.use(express.static(path.join(__dirname, '..', 'frontend')));
 
 // Healthcheck
 app.get('/health', (_req, res) => {
