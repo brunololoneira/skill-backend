@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro Responsable - CalmaTEA</title>
+  <link rel="stylesheet" href="css/estilo.css">
+  <!-- Fuente Bryndan Write -->
+  <link href="https://fonts.googleapis.com/css2?family=Bryndan+Write&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="login-container">
+    <div class="logo-row">
+      <img src="images/CalmaTEA_web.png" alt="Logo CalmaTEA" class="login-logo">
+      <img src="images/LogoImagen.png" alt="Imagen de Inicio" class="login-image">
+    </div>
+
+    <div class="">
+      <img src="images/registerRespText.png" alt="Registrar responsable" class="reg-text">
+    </div>
+
+    <form id="registerForm" class="login-form">
+      <label for="nombre">Nombre de usuario</label>
+      <input type="text" id="nombre" name="nombre" placeholder="Introduce tu nombre" required>
+
+      <label for="pin">PIN</label>
+      <input type="password" id="pin" name="pin" placeholder="Crea un PIN de acceso" required>
+
+      <button type="submit" class="login-btn">Registrarme</button>
+    </form>
+
+    <p id="mensaje" class="mensaje"></p>
+
+    <a href="index.html" class="enlace-simple">← Volver</a>
+    <a href="login.html" class="enlace-simple">¿Ya tienes cuenta? Inicia sesión</a>
+    <a href="registerTut.html" class="enlace-simple">Regístrate como tutelado</a>
+  </div>
+</body>
+
+<script>
+    document.getElementById('registerForm').addEventListener('submit', async (event) => {
+        event.preventDefault(); // Evita el envío clásico del formulario
+
+        const nombre = document.getElementById('nombre').value.trim();
+        const pin = document.getElementById('pin').value.trim();
+        const mensaje = document.getElementById('mensaje');
+
+        mensaje.textContent = '';
+        mensaje.style.color = '';
+
+        try {
+            const response = await fetch('https://skill-backend-ijg4.onrender.com/auth/register/responsable', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nombre, pin })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                mensaje.textContent = `¡Has iniciado sesión correctamente!`;
+                mensaje.style.color = 'green';
+
+                localStorage.setItem('nombre', data.nombre);
+                localStorage.setItem('idUsuario', data.idUsuario);
+                localStorage.setItem('tipo', data.tipo);
+                
+                window.location.href = 'respuestaRegistro.html';
+
+            } else {
+                mensaje.textContent = `⚠️ ${data.error}`;
+                mensaje.style.color = 'red';
+            }
+        } catch (error) {
+            mensaje.textContent = '❌ Error de conexión con el servidor.';
+            mensaje.style.color = 'red';
+            console.error(error);
+        }
+    });
+</script>
+</html>

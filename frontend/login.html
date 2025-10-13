@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Iniciar sesión - CalmaTEA</title>
+  <link rel="stylesheet" href="css/estilo.css">
+  <!-- Fuente Bryndan Write desde Google Fonts (similar) -->
+  <link href="https://fonts.googleapis.com/css2?family=Bryndan+Write&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="login-container">
+    <div class="logo-row">
+      <img src="images/CalmaTEA_web.png" alt="Logo CalmaTEA" class="login-logo">
+      <img src="images/LogoImagen.png" alt="Imagen de Inicio" class="login-image">
+    </div>
+    <div class="">
+        <img src="images/loginText.png" alt="Iniciar sesión" class="login-text">
+    </div>
+    <form id="loginForm" class="login-form">
+        <label for="idUsuario">ID de usuario</label>
+        <input type="text" id="idUsuario" name="idUsuario" placeholder="Introduce tu ID" required>
+
+        <label for="pin">PIN</label>
+        <input type="password" id="pin" name="pin" placeholder="Introduce tu PIN" required>
+
+        <button type="submit" class="login-btn">Entrar</button>
+    </form>
+
+    <p id="mensaje" class="mensaje"></p>
+
+    <a href="index.html" class="enlace-simple">← Volver</a>
+    <a href="registerResp.html" class="enlace-simple">¿No tienes cuenta? ¡Regístrate como responsable!</a>
+    <a href="registerTut.html" class="enlace-simple">Regístrate como tutelado</a>
+
+  </div>
+
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', async (event) => {
+        event.preventDefault(); // Evita el envío clásico del formulario
+
+        const idUsuario = document.getElementById('idUsuario').value.trim();
+        const pin = document.getElementById('pin').value.trim();
+        const mensaje = document.getElementById('mensaje');
+
+        mensaje.textContent = '';
+        mensaje.style.color = '';
+
+        try {
+            const response = await fetch('https://skill-backend-ijg4.onrender.com/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idUsuario, pin })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                mensaje.textContent = `¡Has iniciado sesión correctamente!`;
+                mensaje.style.color = 'green';
+
+                // Guardar datos en el almacenamiento local
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('nombre', data.nombre);
+                localStorage.setItem('idUsuario', data.idUsuario);
+                localStorage.setItem('tipo', data.tipo);
+                
+                // Redirigir según el tipo de usuario
+                if (data.tipo === 'responsable') {
+                    window.location.href = 'panelResponsable.html';
+                } else if (data.tipo === 'tutelado') {
+                    window.location.href = 'panelTutelado.html';
+                }
+
+            } else {
+                mensaje.textContent = `⚠️ ${data.error}`;
+                mensaje.style.color = 'red';
+            }
+        } catch (error) {
+            mensaje.textContent = '❌ Error de conexión con el servidor.';
+            mensaje.style.color = 'red';
+            console.error(error);
+        }
+    });
+    </script>
+</body>
+
+</html>

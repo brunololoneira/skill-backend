@@ -3,53 +3,28 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Prueba Frontend CalmaTea</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f6fb;
-      color: #333;
-      text-align: center;
-      padding-top: 50px;
-    }
-    h1 {
-      color: #0066cc;
-    }
-    button {
-      background-color: #0066cc;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #004c99;
-    }
-  </style>
+  <title>CalmaTEA</title>
+  <link rel="stylesheet" href="css/estilo.css">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <h1>Frontend CalmaTea funcionando 🎉</h1>
-  <p>Si ves este mensaje, Render está sirviendo los archivos estáticos correctamente.</p>
+  <div class="container">
+    <div class="intro">
+      <img src="images/CalmaTEA_web.png" alt="Logo CalmaTEA" class="logo">
+      <img src="images/ImagenInicio.png" alt="Ilustración de inicio" class="illustration">
+    </div>
 
-  <button id="btn">Comprobar conexión con backend</button>
-  <p id="resultado"></p>
+    <main>
+        <div class="buttons-row">
+            <img src="images/login.png" alt="Iniciar sesión" class="button-img" onclick="window.location.href='login.html'">
+            <img src="images/registerTut.png" alt="Registrar tutelado" class="button-img" onclick="window.location.href='registerTut.html'">
+            <img src="images/registerResp.png" alt="Registrar responsable" class="button-img" onclick="window.location.href='registerResp.html'">
+        </div>
 
-  <script>
-    // 👇 cambia la URL por la de tu backend en Render
-    const API_URL = "https://skill-backend-ijg4.onrender.com";
-
-    document.getElementById('btn').addEventListener('click', async () => {
-      const salida = document.getElementById('resultado');
-      salida.textContent = "Comprobando...";
-      try {
-        const res = await fetch(`${API_URL}/health`);
-        const data = await res.json();
-        salida.textContent = `Backend responde: ${JSON.stringify(data)}`;
-      } catch (err) {
-        salida.textContent = "❌ Error al conectar con el backend";
-      }
-    });
-  </script>
+    </main>
+    <footer>
+        <p>Proyecto CalmaTEA — Universidad de Oviedo © 2025</p>
+    </footer>
+  </div>
 </body>
 </html>

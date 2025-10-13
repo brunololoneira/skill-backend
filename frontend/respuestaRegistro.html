@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro completado - CalmaTEA</title>
+  <link rel="stylesheet" href="css/estilo.css">
+  <link href="https://fonts.googleapis.com/css2?family=Bryndan+Write&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="respuesta-container">
+    <img src="images/CalmaTEA_web.png" alt="Logo CalmaTEA" class="login-logo">
+
+    <h1 id="titulo"></h1>
+    <p id="detalle"></p>
+
+    <button id="volverInicio" class="login-btn">Volver al inicio</button>
+  </div>
+
+  <script>
+    // Recuperar los datos del registro desde localStorage
+    const nombre = localStorage.getItem('nombre');
+    const tipo = localStorage.getItem('tipo');
+    const idUsuario = localStorage.getItem('idUsuario');
+
+    const titulo = document.getElementById('titulo');
+    const detalle = document.getElementById('detalle');
+
+    if (!nombre || !tipo || !idUsuario) {
+      // Si no hay datos, redirigir a la página principal
+      window.location.href = 'index.html';
+    } else {
+      // Personalizar el mensaje
+      titulo.textContent = `🎉 ¡Registro completado!`;
+      detalle.textContent = `Te has registrado correctamente como ${tipo}. Tu identificador de usuario es: ${idUsuario}`;
+    }
+
+    // Botón para volver al inicio
+    document.getElementById('volverInicio').addEventListener('click', () => {
+      localStorage.clear(); // Limpia los datos temporales del registro
+      window.location.href = 'index.html';
+    });
+  </script>
+</body>
+</html>

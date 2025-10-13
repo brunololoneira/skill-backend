@@ -1,0 +1,192 @@
+body {
+  margin: 0;
+  font-family: 'Nunito', sans-serif;
+  background-color: #e6f0ff; /* azul pastel */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.container {
+  text-align: center;
+  padding-top: 0px;
+}
+
+.intro {
+  display: flex;
+  flex-direction: column;   /* apila verticalmente las dos imágenes */
+  align-items: center;       /* las centra horizontalmente */
+  gap: 0px;                /* pequeño espacio entre ambas (ajusta al gusto) */
+}
+
+.logo {
+  width: 600px;
+  max-width: 80%;
+}
+
+.illustration {
+  width: 600px;
+  max-width: 90%;
+  margin-bottom: 40px;
+}
+
+.buttons-row {
+  display: flex;                 
+  justify-content: center;       
+  align-items: center;           
+  gap: 90px;                     
+  margin-top: 30px;              
+  flex-wrap: wrap;               
+}
+
+.button-img {
+  width: 280px;                  
+  cursor: pointer;
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.button-img:hover {
+  transform: scale(1.05);        
+  filter: brightness(1.1);       
+}
+
+footer {
+  font-size: 0.9rem;
+  color: #4b4b4b;
+  margin-top: 40px;
+}
+
+.logo, .illustration, .buttons-row {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeUp 0.8s ease forwards;
+}
+
+@keyframes fadeUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ----------------------------------------------------Estilos login.html----------------------------------------------------------------
+/* Fuente personalizada */
+body {
+  font-family: 'Bryndan Write', cursive;
+}
+
+/* Contenedor principal */
+.login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: #E6F0FF;
+  text-align: center;
+}
+
+.logo-row {
+  display: flex;                 /* coloca las imágenes en fila */
+  justify-content: center;       /* las centra horizontalmente */
+  align-items: center;           /* las alinea verticalmente */
+  gap: 20px;                     /* espacio entre las dos imágenes */
+  margin-bottom: 20px;           /* espacio debajo del bloque */
+}
+
+/* Logo superior */
+.login-logo {
+  width: 350px;
+  margin-bottom: 0px;
+}
+
+/* Logo superior */
+.login-image {
+  width: 170px;
+}
+
+.login-text {
+    width: 180px;
+    margin-bottom: 20px;
+    margin-top: 20px;
+}
+
+/* Título */
+.login-container h1 {
+  font-size: rem;
+  color: #000000;
+  margin-bottom: 25px;
+}
+
+/* Formulario */
+.login-form {
+  background-color: white;
+  padding: 30px 40px;
+  border-radius: 20px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 400px;
+}
+
+.login-form label {
+  font-size: 1rem;
+  color: #333;
+  text-align: left;
+}
+
+.login-form input {
+  padding: 10px;
+  border: 2px solid #B0C8E0;
+  border-radius: 10px;
+  font-size: 1rem;
+  outline: none;
+  font-family: 'Bryndan Write', cursive;
+}
+
+.login-form input:focus {
+  border-color: #4A90E2;
+  box-shadow: 0 0 5px rgba(74,144,226,0.5);
+}
+
+/* Botón */
+.login-btn {
+  background-color: #4A90E2;
+  color: white;
+  border: none;
+  border-radius: 25px;
+  padding: 10px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+  font-family: 'Bryndan Write', cursive;
+}
+
+.login-btn:hover {
+  background-color: #357ABD;
+  transform: scale(1.05);
+}
+
+/* Enlace de volver */
+.enlace-simple {
+  display: block;
+  margin-top: 20px;
+  color: #264E86;
+  text-decoration: none;
+  font-size: 1rem;
+}
+
+.enlace-simple:hover {
+  text-decoration: underline;
+}
+
+/*----------------------------------------------------------Estilos register--------------------------------------------------------*/
+
+.reg-text {
+    width: 320px;
+    margin-bottom: 20px;
+    margin-top: 20px;
+}
+

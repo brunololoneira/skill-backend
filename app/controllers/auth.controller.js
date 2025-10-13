@@ -14,6 +14,7 @@ async function registerResponsable(req, res) {
     const { idUsuario, tipo } = await createUsuario({ nombre, pin, tipo: 'responsable' });
     res.status(201).json({ idUsuario, nombre, tipo });
   } catch (e) {
+    console.log('',nombre,tipo);
     console.error('Error registrando responsable:', e.message);
     res.status(500).json({ error: 'No se pudo registrar el responsable' });
   }
