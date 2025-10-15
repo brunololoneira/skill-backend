@@ -58,7 +58,7 @@
             const data = await response.json();
 
             if (response.ok) {
-                mensaje.textContent = `¡Has iniciado sesión correctamente!`;
+                mensaje.textContent = `¡Te has registrado correctamente!`;
                 mensaje.style.color = 'green';
 
                 localStorage.setItem('nombre', data.nombre);

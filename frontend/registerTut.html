@@ -16,7 +16,7 @@
     </div>
 
     <div class="">
-      <img src="images/registerTutText.png" alt="Registrar responsable" class="reg-text">
+      <img src="images/registerTutText.png" alt="Registrar tutelado" class="reg-text">
     </div>
 
     <form id="registerForm" class="login-form">
@@ -36,4 +36,45 @@
     <a href="registerResp.html" class="enlace-simple">Regístrate como responsable</a>
   </div>
 </body>
+<script>
+    document.getElementById('registerForm').addEventListener('submit', async (event) => {
+        event.preventDefault(); // Evita el envío clásico del formulario
+
+        const nombre = document.getElementById('nombre').value.trim();
+        const pin = document.getElementById('pin').value.trim();
+        const mensaje = document.getElementById('mensaje');
+
+        mensaje.textContent = '';
+        mensaje.style.color = '';
+
+        try {
+            const response = await fetch('https://skill-backend-ijg4.onrender.com/auth/register/tutelado', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nombre, pin })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                mensaje.textContent = `¡Te has registrado correctamente!`;
+                mensaje.style.color = 'green';
+
+                localStorage.setItem('nombre', data.nombre);
+                localStorage.setItem('idUsuario', data.idUsuario);
+                localStorage.setItem('tipo', data.tipo);
+                
+                window.location.href = 'respuestaRegistro.html';
+
+            } else {
+                mensaje.textContent = `⚠️ ${data.error}`;
+                mensaje.style.color = 'red';
+            }
+        } catch (error) {
+            mensaje.textContent = '❌ Error de conexión con el servidor.';
+            mensaje.style.color = 'red';
+            console.error(error);
+        }
+    });
+</script>
 </html>
