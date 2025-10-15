@@ -1,13 +1,3 @@
-/* Añade esto al principio de tu estilo.css */
-@media (min-resolution: 120dpi) {
-  html {
-    transform: scale(0.75);          /* 1 / 1.25 = 0.8 (ajusta según tu DPR real) */
-    transform-origin: top left;
-    width: calc(100% / 0.75);        /* corrige el espacio horizontal */
-    height: calc(100% / 0.75);       /* corrige el espacio vertical */
-  }
-}
-
 body {
   margin: 0;
   font-family: 'Nunito', sans-serif;
