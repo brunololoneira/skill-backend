@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Asociar tutelado - CalmaTEA</title>
+  <link rel="stylesheet" href="css/estilo.css">
+  <link href="https://fonts.googleapis.com/css2?family=Bryndan+Write&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="login-container">
+    <div class="logo-row">
+      <img src="imagesWeb/CalmaTEA_web.png" alt="Logo CalmaTEA" class="login-logo">
+      <img src="imagesWeb/asociarText.png" alt="Asociar tutelado" class="login-image">
+    </div>
+
+    <p>Introduce los datos del tutelado que quieres asociar a tu cuenta.</p>
+
+    <form id="asociarForm" class="login-form">
+      <label for="idTutelado">ID del tutelado</label>
+      <input type="text" id="idTutelado" name="idTutelado" placeholder="Introduce el ID" required>
+
+      <label for="pin">PIN</label>
+      <input type="password" id="pin" name="pin" placeholder="Introduce el PIN del tutelado" required>
+
+      <button type="submit" class="login-btn">Asociar tutelado</button>
+    </form>
+
+    <p id="mensaje" class="mensaje"></p>
+
+    <a href="panelResponsable.html" class="enlace-simple">← Volver al panel</a>
+  </div>
+
+  <script>
+    const API_URL = "https://skill-backend-ijg4.onrender.com";
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+      window.location.href = 'login.html';
+    }
+
+    document.getElementById('asociarForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      const idTutelado = document.getElementById('idTutelado').value.trim();
+      const pin = document.getElementById('pin').value.trim();
+      const mensaje = document.getElementById('mensaje');
+
+      try {
+        const response = await fetch(`${API_URL}/tutorias/asociar`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ idTutelado, pin })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          localStorage.setItem('idTuteladoAsociado', idTutelado);
+          // Redirigimos a la página de respuesta
+          window.location.href = 'respuestaAsociar.html';
+        } else {
+          mensaje.textContent = `⚠️ ${data.error || 'No se pudo asociar el tutelado.'}`;
+          mensaje.style.color = 'red';
+        }
+      } catch (error) {
+        mensaje.textContent = '❌ Error de conexión con el servidor.';
+        mensaje.style.color = 'red';
+        console.error(error);
+      }
+    });
+  </script>
+</body>
+</html>

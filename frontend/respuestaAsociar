@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Asociacion completada - CalmaTEA</title>
+  <link rel="stylesheet" href="css/estilo.css">
+  <link href="https://fonts.googleapis.com/css2?family=Bryndan+Write&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="respuesta-container">
+    <img src="imagesWeb/CalmaTEA_web.png" alt="Logo CalmaTEA" class="login-logo">
+
+    <h1 id="titulo"></h1>
+    <p id="detalle"></p>
+
+    <button id="volverPanel" class="login-btn">Volver al panel</button>
+  </div>
+
+  <script>
+    // Recuperar los datos del registro desde localStorage
+    const idUsuario = localStorage.getItem('idUsuario');
+    const idTuteladoAsociado = localStorage.getItem('idTuteladoAsociado');
+
+    const titulo = document.getElementById('titulo');
+    const detalle = document.getElementById('detalle');
+
+    if (!nombre || !tipo || !idUsuario) {
+      // Si no hay datos, redirigir a la página principal
+      window.location.href = 'index.html';
+    } else {
+      // Personalizar el mensaje
+      titulo.textContent = `¡Asociación completada!`;
+      detalle.textContent = `Enhorabuena. El usuario ID:${idUsuario} ha asociado como tutelado al usuario ID:${idTuteladoAsociado}.`;
+    }
+
+    // Botón para volver al inicio
+    document.getElementById('volverPanel').addEventListener('click', () => {
+      localStorage.clear(); // Limpia los datos temporales del registro
+      window.location.href = 'panelResponsable.html';
+    });
+  </script>
+</body>
+</html>
