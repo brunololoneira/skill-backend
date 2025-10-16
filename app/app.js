@@ -18,9 +18,15 @@ const app = express();
 app.use(cors());              // si quieres, restringe origin más adelante
 app.use(express.json());
 
-// Servir estáticos 
-app.use('../images', express.static(path.join(__dirname, '..', 'images')));
+// Servir archivos estáticos del frontend
 app.use(express.static(path.join(__dirname, '..', 'frontend')));
+
+// Servir imágenes globales (carpeta /images)
+app.use('/images', express.static(path.join(__dirname, '..', 'images')));
+
+// Servir imágenes específicas de la web (carpeta /frontend/imagesWeb)
+app.use('/imagesWeb', express.static(path.join(__dirname, '..', 'frontend', 'imagesWeb')));
+
 
 // Healthcheck
 app.get('/health', (_req, res) => {
