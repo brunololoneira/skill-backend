@@ -15,7 +15,7 @@
     <ul id="listaTutelados"></ul>
 
     <h2>Estadísticas del tutelado seleccionado</h2>
-    
+
     <div class="graphics-row">
       <div class="grafica">
         <h3>Emociones registradas</h3>
@@ -35,6 +35,7 @@
 
 
     <button id="logoutBtn" class="login-btn">Cerrar sesión</button>
+    <button id="asociarBtn" class="login-btn">Cerrar sesión</button>
   </div>
 
   <script>
@@ -191,6 +192,10 @@
       window.location.href = 'index.html';
     });
 
+    // ---- IR A ASOCIAR ----
+    document.getElementById('asociarBtn').addEventListener('click', () => {
+      window.location.href = 'asociar.html';
+    });
     obtenerTutelados();
   </script>
 </body>

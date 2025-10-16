@@ -34,11 +34,11 @@
       detalle.textContent = `Enhorabuena. El usuario ID:${idUsuario} ha asociado como tutelado al usuario ID:${idTuteladoAsociado}.`;
     }
 
-    // Botón para volver al inicio
     document.getElementById('volverPanel').addEventListener('click', () => {
-      localStorage.clear(); // Limpia los datos temporales del registro
-      window.location.href = 'panelResponsable.html';
+        localStorage.removeItem('idTuteladoAsociado');
+        window.location.href = 'panelResponsable.html';
     });
+    
   </script>
 </body>
 </html>
