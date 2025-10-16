@@ -3,34 +3,195 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Panel Responsable - CalmaTEA</title>
+  <title>Panel del Responsable - CalmaTEA</title>
   <link rel="stylesheet" href="css/estilo.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <div class="panel-container">
     <h1 id="saludo"></h1>
-    <p>Bienvenido al panel de usuario responsable.</p>
+
+    <h2>Tutelados asociados</h2>
+    <ul id="listaTutelados"></ul>
+
+    <h2>Estadísticas del tutelado seleccionado</h2>
+    
+    <div class="graphics-row">
+      <div class="grafica">
+        <h3>Emociones registradas</h3>
+        <canvas id="emocionesChart"></canvas>
+      </div>
+
+      <div class="grafica">
+        <h3>Técnicas utilizadas</h3>
+        <canvas id="tecnicasChart"></canvas>
+      </div>
+
+      <div class="grafica">
+        <h3>Historias reproducidas</h3>
+        <canvas id="historiasChart"></canvas>
+      </div>
+    </div>
+
+
     <button id="logoutBtn" class="login-btn">Cerrar sesión</button>
   </div>
 
   <script>
-    // Obtener datos del almacenamiento local
+    const API_URL = "https://skill-backend-ijg4.onrender.com";
     const nombre = localStorage.getItem('nombre');
-    const tipo = localStorage.getItem('tipo');
+    const token = localStorage.getItem('token');
 
-    // Verificar si hay sesión válida
-    if (!nombre || tipo !== 'responsable') {
+    // Verificación básica
+    if (!token || !nombre) {
       window.location.href = 'login.html';
     }
 
-    // Mostrar saludo
     document.getElementById('saludo').textContent = `👋 Hola, ${nombre}`;
 
-    // Cerrar sesión
+    // ---- OBTENER TUTELADOS ----
+    async function obtenerTutelados() {
+      try {
+        const res = await fetch(`${API_URL}/tutorias/tutelados`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!res.ok) throw new Error("Error al obtener tutelados");
+        const tutelados = await res.json();
+
+        const lista = document.getElementById('listaTutelados');
+        lista.innerHTML = '';
+
+        if (tutelados.length === 0) {
+          lista.innerHTML = '<p>No tienes tutelados asociados.</p>';
+          return;
+        }
+
+        tutelados.forEach(t => {
+          const li = document.createElement('li');
+          li.textContent = `${t.nombre} (ID: ${t.idUsuario})`;
+          li.style.cursor = 'pointer';
+          li.addEventListener('click', () => cargarEstadisticasTutelado(t.idUsuario, t.nombre, li));
+          lista.appendChild(li);
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    // ---- CARGAR ESTADÍSTICAS DE UN TUTELADO ----
+    async function cargarEstadisticasTutelado(idTutelado, nombreTutelado, elemento) {
+      // Resalta al seleccionado
+      document.querySelectorAll('#listaTutelados li').forEach(li => li.classList.remove('activo'));
+      elemento.classList.add('activo');
+
+      // Destruye las gráficas anteriores
+      if (window.graficas) {
+        window.graficas.forEach(g => g.destroy());
+      }
+      window.graficas = [];
+
+      // Carga datos y dibuja
+      const [emocionesRes, tecnicasRes, historiasRes] = await Promise.all([
+        fetch(`${API_URL}/emociones/${idTutelado}`, { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch(`${API_URL}/tecnicas/${idTutelado}`, { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch(`${API_URL}/historias/${idTutelado}`, { headers: { 'Authorization': `Bearer ${token}` } })
+      ]);
+
+      const emociones = await emocionesRes.json();
+      const tecnicas = await tecnicasRes.json();
+      const historias = await historiasRes.json();
+
+      renderGraficas(emociones, tecnicas, historias, nombreTutelado);
+    }
+
+
+    // ---- RENDERIZAR GRÁFICAS ----
+    function renderGraficas(emociones, tecnicas, historias, nombre) {
+      // Contar emociones
+      const emocionesCount = {};
+      emociones.forEach(e => {
+        emocionesCount[e.emocion] = (emocionesCount[e.emocion] || 0) + 1;
+      });
+
+      // Contar técnicas
+      const tecnicasCount = {};
+      tecnicas.forEach(t => {
+        tecnicasCount[t.tecnica] = (tecnicasCount[t.tecnica] || 0) + 1;
+      });
+
+      // Contar historias
+      const historiasCount = {};
+      historias.forEach(h => {
+        historiasCount[h.historiaId] = (historiasCount[h.historiaId] || 0) + 1;
+      });
+
+      const colores = ['#6AA6FF', '#FF9999', '#FFCC99', '#99CCFF', '#99FF99'];
+
+      // Gráfico de emociones
+      new Chart(document.getElementById('emocionesChart'), {
+        type: 'pie',
+        data: {
+          labels: Object.keys(emocionesCount),
+          datasets: [{
+            label: 'Emociones',
+            data: Object.values(emocionesCount),
+            backgroundColor: colores
+          }]
+        },
+        options: {
+          plugins: {
+            title: { display: true, text: `Emociones de ${nombre}` }
+          }
+        }
+      });
+
+      // Gráfico de técnicas
+      new Chart(document.getElementById('tecnicasChart'), {
+        type: 'bar',
+        data: {
+          labels: Object.keys(tecnicasCount),
+          datasets: [{
+            label: 'Técnicas',
+            data: Object.values(tecnicasCount),
+            backgroundColor: '#6AA6FF'
+          }]
+        },
+        options: {
+          scales: { y: { beginAtZero: true } },
+          plugins: {
+            title: { display: true, text: `Técnicas realizadas por ${nombre}` }
+          }
+        }
+      });
+
+      // Gráfico de historias
+      new Chart(document.getElementById('historiasChart'), {
+        type: 'bar',
+        data: {
+          labels: Object.keys(historiasCount),
+          datasets: [{
+            label: 'Historias reproducidas',
+            data: Object.values(historiasCount),
+            backgroundColor: '#B185DB'
+          }]
+        },
+        options: {
+          scales: { y: { beginAtZero: true } },
+          plugins: {
+            title: { display: true, text: `Historias de ${nombre}` }
+          }
+        }
+      });
+    }
+
+    // ---- CERRAR SESIÓN ----
     document.getElementById('logoutBtn').addEventListener('click', () => {
       localStorage.clear();
       window.location.href = 'index.html';
     });
+
+    obtenerTutelados();
   </script>
 </body>
 </html>
