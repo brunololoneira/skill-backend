@@ -17,23 +17,22 @@
     <h2>Estadísticas del tutelado seleccionado</h2>
 
     <div class="graphics-row">
-      <div class="grafica">
-        <h3>Emociones registradas</h3>
-        <canvas id="emocionesChart"></canvas>
+    <div class="card grafica">
+      <h3>Emociones registradas</h3>
+      <canvas id="emocionesChart"></canvas>
       </div>
 
-      <div class="grafica">
+      <div class="card grafica">
         <h3>Técnicas utilizadas</h3>
         <canvas id="tecnicasChart"></canvas>
       </div>
 
-      <div class="grafica">
+      <div class="card grafica">
         <h3>Historias reproducidas</h3>
         <canvas id="historiasChart"></canvas>
       </div>
     </div>
-
-
+    
     <button id="logoutBtn" class="login-btn">Cerrar sesión</button>
     <button id="asociarBtn" class="login-btn">Asociar tutelado</button>
   </div>
@@ -108,6 +107,7 @@
 
 
     // ---- RENDERIZAR GRÁFICAS ----
+    // ---- RENDERIZAR GRÁFICAS ----
     function renderGraficas(emociones, tecnicas, historias, nombre) {
       // Contar emociones
       const emocionesCount = {};
@@ -127,64 +127,120 @@
         historiasCount[h.historiaId] = (historiasCount[h.historiaId] || 0) + 1;
       });
 
-      const colores = ['#6AA6FF', '#FF9999', '#FFCC99', '#99CCFF', '#99FF99'];
+      // Paletas fijas coherentes con CalmaTEA
+      const coloresEmociones = {
+        alegre: '#FF9999',
+        triste: '#FFD966',
+        enfadado: '#9AD0F5'
+      };
 
-      // Gráfico de emociones
-      new Chart(document.getElementById('emocionesChart'), {
+      const coloresTecnicas = {
+        'Respiración guiada': '#82E0AA',
+        'Sonido de olas': '#5DADE2',
+        'Sonido de lluvia': '#AED6F1',
+        'Visualización relajante': '#A3E4D7'
+      };
+
+      const coloresHistorias = {
+        'Me han gritado': '#C39BD3',
+        'Me han empujado': '#AF7AC5',
+        'Se han reído de mí': '#D2B4DE',
+        'Me han ignorado': '#EBDEF0',
+        'Me han quitado algo': '#E8DAEF'
+      };
+
+      // Destruye gráficas previas si existen
+      if (window.graficas) window.graficas.forEach(g => g.destroy());
+      window.graficas = [];
+
+      // --- Emociones (gráfico tipo pastel)
+      const emocionesChart = new Chart(document.getElementById('emocionesChart'), {
         type: 'pie',
         data: {
           labels: Object.keys(emocionesCount),
           datasets: [{
-            label: 'Emociones',
             data: Object.values(emocionesCount),
-            backgroundColor: colores
+            backgroundColor: Object.keys(emocionesCount).map(e => coloresEmociones[e] || '#CCC')
           }]
         },
         options: {
           plugins: {
-            title: { display: true, text: `Emociones de ${nombre}` }
+            title: { display: true, text: `Emociones de ${nombre}` },
+            legend: { display: true, position: 'bottom' },
+            tooltip: { callbacks: { label: ctx => `${ctx.label}: ${ctx.parsed}` } }
           }
         }
       });
 
-      // Gráfico de técnicas
-      new Chart(document.getElementById('tecnicasChart'), {
+      // --- Técnicas (barras con colores fijos y leyenda)
+      const tecnicasLabels = Object.keys(tecnicasCount);
+      const tecnicasChart = new Chart(document.getElementById('tecnicasChart'), {
         type: 'bar',
         data: {
-          labels: Object.keys(tecnicasCount),
+          labels: tecnicasLabels,
           datasets: [{
             label: 'Técnicas',
             data: Object.values(tecnicasCount),
-            backgroundColor: '#6AA6FF'
+            backgroundColor: tecnicasLabels.map(t => coloresTecnicas[t] || '#B3E5FC')
           }]
         },
         options: {
-          scales: { y: { beginAtZero: true } },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { stepSize: 1, precision: 0 }
+            }
+          },
           plugins: {
-            title: { display: true, text: `Técnicas realizadas por ${nombre}` }
+            title: { display: true, text: `Técnicas realizadas por ${nombre}` },
+            legend: { display: true, position: 'bottom' },
+            tooltip: {
+              callbacks: {
+                title: ctx => ctx[0].label,
+                label: ctx => `${ctx.parsed.y} veces`
+              }
+            }
           }
         }
       });
 
-      // Gráfico de historias
-      new Chart(document.getElementById('historiasChart'), {
+      // --- Historias (barras con colores fijos y leyenda)
+      const historiasLabels = Object.keys(historiasCount);
+      const historiasChart = new Chart(document.getElementById('historiasChart'), {
         type: 'bar',
         data: {
-          labels: Object.keys(historiasCount),
+          labels: historiasLabels,
           datasets: [{
-            label: 'Historias reproducidas',
+            label: 'Historias',
             data: Object.values(historiasCount),
-            backgroundColor: '#B185DB'
+            backgroundColor: historiasLabels.map(h => coloresHistorias[h] || '#D7BDE2')
           }]
         },
         options: {
-          scales: { y: { beginAtZero: true } },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { stepSize: 1, precision: 0 }
+            }
+          },
           plugins: {
-            title: { display: true, text: `Historias de ${nombre}` }
+            title: { display: true, text: `Historias vistas por ${nombre}` },
+            legend: { display: true, position: 'bottom' },
+            tooltip: {
+              callbacks: {
+                title: ctx => ctx[0].label,
+                label: ctx => `${ctx.parsed.y} veces`
+              }
+            }
           }
         }
       });
+
+      // Guardar para limpiar luego
+      window.graficas = [emocionesChart, tecnicasChart, historiasChart];
     }
+
+
 
     // ---- CERRAR SESIÓN ----
     document.getElementById('logoutBtn').addEventListener('click', () => {
