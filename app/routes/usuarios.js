@@ -29,10 +29,18 @@ router.get('/login', (req, res) => {
       return res.status(500).json({ error: 'Error interno del servidor.' });
     }
 
+    // Si no hay coincidencia → credenciales incorrectas
     if (!row) {
       return res.status(401).json({ error: 'Usuario o PIN incorrecto.' });
     }
 
+    // Si el usuario es de tipo "responsable", devolver también error genérico
+    if (row.tipo === 'responsable') {
+      console.warn(`Intento de login desde Alexa con usuario responsable: ${row.idUsuario}`);
+      return res.status(401).json({ error: 'Usuario o PIN incorrecto.' });
+    }
+
+    // Si pasa los filtros, login correcto
     res.json({
       idUsuario: row.idUsuario,
       nombre: row.nombre
@@ -40,7 +48,7 @@ router.get('/login', (req, res) => {
   });
 });
 
-// Ruta GET /usuarios/tutelados/:idResponsable → devuelve los niños tutelados por un responsable
+// Ruta GET /usuarios/tutelados/:idResponsabl
 router.get('/tutelados/:idResponsable', (req, res) => {
   const { idResponsable } = req.params;
 
