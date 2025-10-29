@@ -48,6 +48,13 @@
         mensaje.textContent = '';
         mensaje.style.color = '';
 
+        // Validación local antes de enviar
+        if (!nombre || !/^\d{4}$/.test(pin)) {
+          mensaje.textContent = 'No se ha podido completar el registro. Comprueba los datos introducidos o inténtalo de nuevo más tarde.';
+          mensaje.style.color = 'red';
+          return;
+        }
+        
         try {
             const response = await fetch('https://skill-backend-ijg4.onrender.com/auth/register/responsable', {
                 method: 'POST',
