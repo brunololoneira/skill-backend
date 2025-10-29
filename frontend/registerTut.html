@@ -47,6 +47,13 @@
         mensaje.textContent = '';
         mensaje.style.color = '';
 
+        // Validación local antes de enviar
+        if (!/^[A-Za-zÁÉÍÓÚáéíóúÜüÑñ_ ]{3,20}$/.test(nombre) || !/^\d{4}$/.test(pin)) {
+          mensaje.textContent = 'No se ha podido completar el registro. Comprueba que nombre y PIN tienen el formato correcto.';
+          mensaje.style.color = 'red';
+          return;
+        }
+
         try {
             const response = await fetch('https://skill-backend-ijg4.onrender.com/auth/register/tutelado', {
                 method: 'POST',
@@ -67,11 +74,11 @@
                 window.location.href = 'respuestaRegistro.html';
 
             } else {
-                mensaje.textContent = `⚠️ ${data.error}`;
+                mensaje.textContent = 'No se ha podido completar el registro. Comprueba los datos introducidos o inténtalo de nuevo más tarde.';
                 mensaje.style.color = 'red';
             }
         } catch (error) {
-            mensaje.textContent = '❌ Error de conexión con el servidor.';
+            mensaje.textContent = 'No se ha podido completar el registro. Comprueba tu conexión e inténtalo de nuevo.';
             mensaje.style.color = 'red';
             console.error(error);
         }

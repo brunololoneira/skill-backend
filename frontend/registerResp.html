@@ -49,8 +49,8 @@
         mensaje.style.color = '';
 
         // Validación local antes de enviar
-        if (!nombre || !/^\d{4}$/.test(pin)) {
-          mensaje.textContent = 'No se ha podido completar el registro. Comprueba los datos introducidos o inténtalo de nuevo más tarde.';
+        if (!/^[A-Za-zÁÉÍÓÚáéíóúÜüÑñ_ ]{3,20}$/.test(nombre) || !/^\d{4}$/.test(pin)) {
+          mensaje.textContent = 'No se ha podido completar el registro. Comprueba que nombre y PIN tienen el formato correcto.';
           mensaje.style.color = 'red';
           return;
         }
