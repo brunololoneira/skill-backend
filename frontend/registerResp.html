@@ -68,11 +68,12 @@
                 window.location.href = 'respuestaRegistro.html';
 
             } else {
-                mensaje.textContent = `⚠️ ${data.error}`;
+                // Mensaje genérico para errores del servidor o nombre duplicado
+                mensaje.textContent = 'No se ha podido completar el registro. Comprueba los datos introducidos o inténtalo de nuevo más tarde.';
                 mensaje.style.color = 'red';
             }
         } catch (error) {
-            mensaje.textContent = '❌ Error de conexión con el servidor.';
+            mensaje.textContent = 'No se ha podido completar el registro. Comprueba tu conexión e inténtalo de nuevo.';
             mensaje.style.color = 'red';
             console.error(error);
         }
