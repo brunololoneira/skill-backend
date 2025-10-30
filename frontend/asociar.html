@@ -46,6 +46,13 @@
       const pin = document.getElementById('pin').value.trim();
       const mensaje = document.getElementById('mensaje');
 
+      // --- Validación local (flujo 4a)
+      if (!/^\d{1,6}$/.test(idTutelado) || !/^\d{4}$/.test(pin)) {
+        mensaje.textContent = 'No se ha podido completar la asociación. Comprueba que el ID y el PIN tengan el formato correcto.';
+        mensaje.style.color = 'red';
+        return;
+      }
+      
       try {
         const response = await fetch(`${API_URL}/tutorias/asociar`, {
           method: 'POST',
@@ -62,13 +69,16 @@
           localStorage.setItem('idTuteladoAsociado', idTutelado);
           // Redirigimos a la página de respuesta
           window.location.href = 'respuestaAsociar.html';
+        } else if (response.status === 400 || response.status === 404) {
+        // Datos incorrectos / tutelado inexistente (flujo 5b)
+        mensaje.textContent = 'No se ha podido completar la asociación. Comprueba los datos introducidos o inténtalo de nuevo más tarde.';
+        mensaje.style.color = 'red';
         } else {
-          mensaje.textContent = `⚠️ ${data.error || 'No se pudo asociar el tutelado.'}`;
+          mensaje.textContent = 'No se ha podido completar la asociación. Inténtalo de nuevo más tarde.';
           mensaje.style.color = 'red';
         }
       } catch (error) {
-        mensaje.textContent = '❌ Error de conexión con el servidor.';
-        mensaje.style.color = 'red';
+        mensaje.textContent = 'No se ha podido completar la asociación. Comprueba tu conexión e inténtalo de nuevo.';        mensaje.style.color = 'red';
         console.error(error);
       }
     });
