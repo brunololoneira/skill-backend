@@ -37,220 +37,214 @@
     <button id="asociarBtn" class="login-btn">Asociar tutelado</button>
   </div>
 
-  <script>
-    const API_URL = "https://skill-backend-ijg4.onrender.com";
-    const nombre = localStorage.getItem('nombre');
-    const token = localStorage.getItem('token');
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
 
-    // Verificación básica
-    if (!token || !nombre) {
-      window.location.href = 'login.html';
-    }
+<script>
+  const API_URL = "https://skill-backend-ijg4.onrender.com";
+  const nombre = localStorage.getItem('nombre');
+  const token = localStorage.getItem('token');
 
-    document.getElementById('saludo').textContent = `👋 Hola, ${nombre}`;
+  if (!token || !nombre) {
+    window.location.href = 'login.html';
+  }
 
-    // ---- OBTENER TUTELADOS ----
-    async function obtenerTutelados() {
-      try {
-        const res = await fetch(`${API_URL}/tutorias/tutelados`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
+  document.getElementById('saludo').textContent = ` Hola, ${nombre}`;
 
-        if (!res.ok) throw new Error("Error al obtener tutelados");
-        const tutelados = await res.json();
+  async function obtenerTutelados() {
+    try {
+      const res = await fetch(`${API_URL}/tutorias/tutelados`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error("Error al obtener tutelados");
+      const tutelados = await res.json();
 
-        const lista = document.getElementById('listaTutelados');
-        lista.innerHTML = '';
+      const lista = document.getElementById('listaTutelados');
+      lista.innerHTML = '';
 
-        if (tutelados.length === 0) {
-          lista.innerHTML = '<p>No tienes tutelados asociados.</p>';
-          return;
-        }
-
-        tutelados.forEach(t => {
-          const li = document.createElement('li');
-          li.textContent = `${t.nombre} (ID: ${t.idUsuario})`;
-          li.style.cursor = 'pointer';
-          li.addEventListener('click', () => cargarEstadisticasTutelado(t.idUsuario, t.nombre, li));
-          lista.appendChild(li);
-        });
-      } catch (err) {
-        console.error(err);
+      if (tutelados.length === 0) {
+        lista.innerHTML = '<p>No tienes tutelados asociados.</p>';
+        return;
       }
+
+      tutelados.forEach(t => {
+        const li = document.createElement('li');
+        li.textContent = `${t.nombre} (ID: ${t.idUsuario})`;
+        li.style.cursor = 'pointer';
+        li.addEventListener('click', () => cargarEstadisticasTutelado(t.idUsuario, t.nombre, li));
+        lista.appendChild(li);
+      });
+    } catch (err) {
+      console.error(err);
     }
+  }
 
-    // ---- CARGAR ESTADÍSTICAS DE UN TUTELADO ----
-    async function cargarEstadisticasTutelado(idTutelado, nombreTutelado, elemento) {
-      // Resalta al seleccionado
-      document.querySelectorAll('#listaTutelados li').forEach(li => li.classList.remove('activo'));
-      elemento.classList.add('activo');
+  async function cargarEstadisticasTutelado(idTutelado, nombreTutelado, elemento) {
+    document.querySelectorAll('#listaTutelados li').forEach(li => li.classList.remove('activo'));
+    elemento.classList.add('activo');
 
-      // Destruye las gráficas anteriores
-      if (window.graficas) {
-        window.graficas.forEach(g => g.destroy());
-      }
-      window.graficas = [];
+    if (window.graficas) window.graficas.forEach(g => g.destroy());
+    window.graficas = [];
 
-      // Carga datos y dibuja
-      const [emocionesRes, tecnicasRes, historiasRes] = await Promise.all([
-        fetch(`${API_URL}/emociones/${idTutelado}`, { headers: { 'Authorization': `Bearer ${token}` } }),
-        fetch(`${API_URL}/tecnicas/${idTutelado}`, { headers: { 'Authorization': `Bearer ${token}` } }),
-        fetch(`${API_URL}/historias/${idTutelado}`, { headers: { 'Authorization': `Bearer ${token}` } })
-      ]);
+    const [emocionesRes, tecnicasRes, historiasRes] = await Promise.all([
+      fetch(`${API_URL}/emociones/${idTutelado}`, { headers: { 'Authorization': `Bearer ${token}` } }),
+      fetch(`${API_URL}/tecnicas/${idTutelado}`, { headers: { 'Authorization': `Bearer ${token}` } }),
+      fetch(`${API_URL}/historias/${idTutelado}`, { headers: { 'Authorization': `Bearer ${token}` } })
+    ]);
 
-      const emociones = await emocionesRes.json();
-      const tecnicas = await tecnicasRes.json();
-      const historias = await historiasRes.json();
+    const emociones = await emocionesRes.json();
+    const tecnicas = await tecnicasRes.json();
+    const historias = await historiasRes.json();
 
-      renderGraficas(emociones, tecnicas, historias, nombreTutelado);
-    }
+    renderGraficas(emociones, tecnicas, historias, nombreTutelado);
+  }
 
-    // ---- RENDERIZAR GRÁFICAS ----
-    function renderGraficas(emociones, tecnicas, historias, nombre) {
-      // Contar emociones
-      const emocionesCount = {};
-      emociones.forEach(e => {
-        emocionesCount[e.emocion] = (emocionesCount[e.emocion] || 0) + 1;
-      });
+  function renderGraficas(emociones, tecnicas, historias, nombre) {
+    if (window.graficas) window.graficas.forEach(g => g.destroy());
+    window.graficas = [];
 
-      // Contar técnicas
-      const tecnicasCount = {};
-      tecnicas.forEach(t => {
-        tecnicasCount[t.tecnica] = (tecnicasCount[t.tecnica] || 0) + 1;
-      });
+    // 🎨 Paletas de colores coherentes
+    const coloresEmociones = { alegre: '#FF9999', triste: '#FFD966', enfadado: '#9AD0F5' };
+    const coloresTecnicas = {
+      'Respiración guiada': '#82E0AA',
+      'Sonido de olas': '#5DADE2',
+      'Sonido de lluvia': '#AED6F1',
+      'Visualización relajante': '#A3E4D7'
+    };
+    const coloresHistorias = {
+      'Me han gritado': '#C39BD3',
+      'Me han empujado': '#AF7AC5',
+      'Se han reído de mí': '#D2B4DE',
+      'Me han ignorado': '#EBDEF0',
+      'Me han quitado algo': '#E8DAEF'
+    };
 
-      // Contar historias
-      const historiasCount = {};
-      historias.forEach(h => {
-        historiasCount[h.historiaId] = (historiasCount[h.historiaId] || 0) + 1;
-      });
+    // --- 🧠 EMOCIONES (gráfico temporal)
+    const emocionesTemporal = emociones.map(e => ({
+      x: new Date(e.timestamp),
+      y: 1,
+      emocion: e.emocion,
+      causa: e.causa
+    }));
 
-      // Paletas fijas coherentes con CalmaTEA
-      const coloresEmociones = {
-        alegre: '#FF9999',
-        triste: '#FFD966',
-        enfadado: '#9AD0F5'
-      };
-
-      const coloresTecnicas = {
-        'Respiración guiada': '#82E0AA',
-        'Sonido de olas': '#5DADE2',
-        'Sonido de lluvia': '#AED6F1',
-        'Visualización relajante': '#A3E4D7'
-      };
-
-      const coloresHistorias = {
-        'Me han gritado': '#C39BD3',
-        'Me han empujado': '#AF7AC5',
-        'Se han reído de mí': '#D2B4DE',
-        'Me han ignorado': '#EBDEF0',
-        'Me han quitado algo': '#E8DAEF'
-      };
-
-      // Destruye gráficas previas si existen
-      if (window.graficas) window.graficas.forEach(g => g.destroy());
-      window.graficas = [];
-
-      // --- Emociones (gráfico tipo pastel)
-      const emocionesChart = new Chart(document.getElementById('emocionesChart'), {
-        type: 'pie',
-        data: {
-          labels: Object.keys(emocionesCount),
-          datasets: [{
-            data: Object.values(emocionesCount),
-            backgroundColor: Object.keys(emocionesCount).map(e => coloresEmociones[e] || '#CCC')
-          }]
-        },
-        options: {
-          plugins: {
-            title: { display: true, text: `Emociones de ${nombre}` },
-            legend: { display: true, position: 'bottom' },
-            tooltip: { callbacks: { label: ctx => `${ctx.label}: ${ctx.parsed}` } }
-          }
-        }
-      });
-
-      // --- Técnicas (barras con colores fijos y leyenda)
-      const tecnicasLabels = Object.keys(tecnicasCount);
-      const tecnicasChart = new Chart(document.getElementById('tecnicasChart'), {
-        type: 'bar',
-        data: {
-          labels: tecnicasLabels,
-          datasets: [{
-            label: 'Técnicas',
-            data: Object.values(tecnicasCount),
-            backgroundColor: tecnicasLabels.map(t => coloresTecnicas[t] || '#B3E5FC')
-          }]
-        },
-        options: {
-          scales: {
-            y: {
-              beginAtZero: true,
-              ticks: { stepSize: 1, precision: 0 }
-            }
+    const emocionesChart = new Chart(document.getElementById('emocionesChart'), {
+      type: 'line',
+      data: {
+        datasets: [{
+          label: 'Emociones registradas',
+          data: emocionesTemporal,
+          borderColor: '#FF9999',
+          tension: 0.3,
+          pointBackgroundColor: emocionesTemporal.map(e => coloresEmociones[e.emocion] || '#CCC')
+        }]
+      },
+      options: {
+        scales: {
+          x: {
+            type: 'time',
+            time: { unit: 'day' },
+            title: { display: true, text: 'Fecha' }
           },
-          plugins: {
-            title: { display: true, text: `Técnicas realizadas por ${nombre}` },
-            legend: { display: true, position: 'bottom' },
-            tooltip: {
-              callbacks: {
-                title: ctx => ctx[0].label,
-                label: ctx => `${ctx.parsed.y} veces`
+          y: { beginAtZero: true, ticks: { stepSize: 1 }, display: false }
+        },
+        plugins: {
+          title: { display: true, text: `Evolución de emociones de ${nombre}` },
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => {
+                const e = ctx.raw;
+                return `${e.emocion}${e.causa ? ` - ${e.causa}` : ''}`;
               }
             }
           }
         }
-      });
+      }
+    });
 
-      // --- Historias (barras con colores fijos y leyenda)
-      const historiasLabels = Object.keys(historiasCount);
-      const historiasChart = new Chart(document.getElementById('historiasChart'), {
-        type: 'bar',
-        data: {
-          labels: historiasLabels,
-          datasets: [{
-            label: 'Historias',
-            data: Object.values(historiasCount),
-            backgroundColor: historiasLabels.map(h => coloresHistorias[h] || '#D7BDE2')
-          }]
+    // --- 🧩 TÉCNICAS (barras)
+    const tecnicasCount = {};
+    tecnicas.forEach(t => tecnicasCount[t.tecnica] = (tecnicasCount[t.tecnica] || 0) + 1);
+    const tecnicasLabels = Object.keys(tecnicasCount);
+    const tecnicasChart = new Chart(document.getElementById('tecnicasChart'), {
+      type: 'bar',
+      data: {
+        labels: tecnicasLabels,
+        datasets: [{
+          label: 'Técnicas',
+          data: Object.values(tecnicasCount),
+          backgroundColor: tecnicasLabels.map(t => coloresTecnicas[t] || '#B3E5FC')
+        }]
+      },
+      options: {
+        scales: {
+          y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 } }
         },
-        options: {
-          scales: {
-            y: {
-              beginAtZero: true,
-              ticks: { stepSize: 1, precision: 0 }
-            }
+        plugins: {
+          title: { display: true, text: `Técnicas realizadas por ${nombre}` },
+          legend: { display: false }
+        }
+      }
+    });
+
+    // --- 📚 HISTORIAS (gráfico temporal)
+    const historiasTemporal = historias.map(h => ({
+      x: new Date(h.timestamp),
+      y: 1,
+      historiaId: h.historiaId,
+      respuesta: h.respuesta
+    }));
+
+    const historiasChart = new Chart(document.getElementById('historiasChart'), {
+      type: 'line',
+      data: {
+        datasets: [{
+          label: 'Historias reproducidas',
+          data: historiasTemporal,
+          borderColor: '#C39BD3',
+          tension: 0.3,
+          pointBackgroundColor: historiasTemporal.map(h => coloresHistorias[h.historiaId] || '#CCC')
+        }]
+      },
+      options: {
+        scales: {
+          x: {
+            type: 'time',
+            time: { unit: 'day' },
+            title: { display: true, text: 'Fecha' }
           },
-          plugins: {
-            title: { display: true, text: `Historias vistas por ${nombre}` },
-            legend: { display: true, position: 'bottom' },
-            tooltip: {
-              callbacks: {
-                title: ctx => ctx[0].label,
-                label: ctx => `${ctx.parsed.y} veces`
+          y: { beginAtZero: true, ticks: { stepSize: 1 }, display: false }
+        },
+        plugins: {
+          title: { display: true, text: `Historias vistas por ${nombre}` },
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => {
+                const h = ctx.raw;
+                return `${h.historiaId} - Respuesta: ${h.respuesta}`;
               }
             }
           }
         }
-      });
-
-      // Guardar para limpiar luego
-      window.graficas = [emocionesChart, tecnicasChart, historiasChart];
-    }
-
-
-
-    // ---- CERRAR SESIÓN ----
-    document.getElementById('logoutBtn').addEventListener('click', () => {
-      localStorage.clear();
-      window.location.href = 'index.html';
+      }
     });
 
-    // ---- IR A ASOCIAR ----
-    document.getElementById('asociarBtn').addEventListener('click', () => {
-      window.location.href = 'asociar.html';
-    });
-    obtenerTutelados();
-  </script>
+    window.graficas = [emocionesChart, tecnicasChart, historiasChart];
+  }
+
+  // Botones
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+    localStorage.clear();
+    window.location.href = 'index.html';
+  });
+
+  document.getElementById('asociarBtn').addEventListener('click', () => {
+    window.location.href = 'asociar.html';
+  });
+
+  obtenerTutelados();
+</script>
+
 </body>
 </html>
