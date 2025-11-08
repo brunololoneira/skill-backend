@@ -47,7 +47,7 @@
     <button id="asociarBtn" class="login-btn">Asociar tutelado</button>
   </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
 
 <script>
@@ -61,32 +61,45 @@ if (!token || !nombre) {
 
 document.getElementById('saludo').textContent = `👋 Hola, ${nombre}`;
 
+// =============== UTILIDADES ===============
+function agruparPorDiaYCategoria(datos, key) {
+  const agrupado = {};
+  datos.forEach(d => {
+    if (!d.timestamp) return;
+    const fecha = new Date(d.timestamp).toISOString().split('T')[0];
+    if (!agrupado[fecha]) agrupado[fecha] = {};
+    const cat = d[key];
+    agrupado[fecha][cat] = (agrupado[fecha][cat] || 0) + 1;
+  });
+  return agrupado;
+}
+
+function agruparPorDiaYDosCampos(datos, c1, c2) {
+  const agrupado = {};
+  datos.forEach(d => {
+    if (!d.timestamp || !d[c1] || !d[c2]) return;
+    const fecha = new Date(d.timestamp).toISOString().split('T')[0];
+    if (!agrupado[fecha]) agrupado[fecha] = {};
+    const clave = `${d[c1]} - ${d[c2]}`;
+    agrupado[fecha][clave] = (agrupado[fecha][clave] || 0) + 1;
+  });
+  return agrupado;
+}
+
+// =============== DATOS Y GRÁFICAS ===============
 async function obtenerTutelados() {
-  try {
-    const res = await fetch(`${API_URL}/tutorias/tutelados`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    if (!res.ok) throw new Error("Error al obtener tutelados");
-    const tutelados = await res.json();
+  const res = await fetch(`${API_URL}/tutorias/tutelados`, { headers: { 'Authorization': `Bearer ${token}` } });
+  const tutelados = await res.json();
+  const lista = document.getElementById('listaTutelados');
+  lista.innerHTML = '';
 
-    const lista = document.getElementById('listaTutelados');
-    lista.innerHTML = '';
-
-    if (tutelados.length === 0) {
-      lista.innerHTML = '<p>No tienes tutelados asociados.</p>';
-      return;
-    }
-
-    tutelados.forEach(t => {
-      const li = document.createElement('li');
-      li.textContent = `${t.nombre} (ID: ${t.idUsuario})`;
-      li.style.cursor = 'pointer';
-      li.addEventListener('click', () => cargarEstadisticasTutelado(t.idUsuario, t.nombre, li));
-      lista.appendChild(li);
-    });
-  } catch (err) {
-    console.error(err);
-  }
+  tutelados.forEach(t => {
+    const li = document.createElement('li');
+    li.textContent = `${t.nombre} (ID: ${t.idUsuario})`;
+    li.style.cursor = 'pointer';
+    li.addEventListener('click', () => cargarEstadisticasTutelado(t.idUsuario, t.nombre, li));
+    lista.appendChild(li);
+  });
 }
 
 async function cargarEstadisticasTutelado(idTutelado, nombreTutelado, elemento) {
@@ -109,149 +122,123 @@ async function cargarEstadisticasTutelado(idTutelado, nombreTutelado, elemento) 
   renderGraficas(emociones, tecnicas, historias, nombreTutelado);
 }
 
-function agruparPorDiaYCategoria(datos, categoriaKey) {
-  const agrupado = {};
-  datos.forEach(d => {
-    if (!d.timestamp) return;
-    const fecha = new Date(d.timestamp).toISOString().split('T')[0];
-    if (!agrupado[fecha]) agrupado[fecha] = {};
-    const cat = d[categoriaKey];
-    agrupado[fecha][cat] = (agrupado[fecha][cat] || 0) + 1;
-  });
-  return agrupado;
-}
-
-function agruparPorDosCampos(datos, campo1, campo2) {
-  const conteo = {};
-  datos.forEach(d => {
-    if (!d[campo1] || !d[campo2]) return;
-    const clave = `${d[campo1]} - ${d[campo2]}`;
-    conteo[clave] = (conteo[clave] || 0) + 1;
-  });
-  return conteo;
-}
-
 function renderGraficas(emociones, tecnicas, historias, nombre) {
   if (window.graficas) window.graficas.forEach(g => g.destroy());
   window.graficas = [];
 
-  const coloresEmociones = { alegre: '#FF9999', triste: '#FFD966', enfadado: '#9AD0F5' };
-  const coloresHistorias = {
-    'Me han gritado': '#C39BD3', 'Me han empujado': '#AF7AC5',
-    'Se han reído de mí': '#D2B4DE', 'Me han ignorado': '#EBDEF0', 'Me han quitado algo': '#E8DAEF'
-  };
-  const coloresTecnicas = {
-    'Respiración guiada': '#82E0AA', 'Sonido de olas': '#5DADE2',
-    'Sonido de lluvia': '#AED6F1', 'Visualización relajante': '#A3E4D7'
-  };
+  // Paletas básicas
+  const coloresBase = [
+    '#FF9999', '#FFD966', '#9AD0F5', '#C39BD3', '#82E0AA', '#AED6F1',
+    '#A3E4D7', '#F8C471', '#B2BABB', '#E8DAEF', '#F5B7B1', '#BB8FCE'
+  ];
+  let colorIndex = 0;
+  const getColor = () => coloresBase[(colorIndex++) % coloresBase.length];
 
-  // 🧠 EMOCIONES POR DÍA
-  const emocionesAgr = agruparPorDiaYCategoria(emociones, 'emocion');
-  const fechasE = Object.keys(emocionesAgr).sort();
-  const tiposEmo = [...new Set(emociones.map(e => e.emocion))];
-  const emocionesDatasets = tiposEmo.map(e => ({
-    label: e, data: fechasE.map(f => emocionesAgr[f][e] || 0),
-    backgroundColor: coloresEmociones[e] || '#CCC'
+  // --- EMOCIONES ---
+  const emoAgr = agruparPorDiaYCategoria(emociones, 'emocion');
+  const fechasE = Object.keys(emoAgr).sort();
+  const tiposE = [...new Set(emociones.map(e => e.emocion))];
+  const emoDatasets = tiposE.map(e => ({
+    label: e,
+    data: fechasE.map(f => emoAgr[f][e] || 0),
+    backgroundColor: getColor()
   }));
-
   const emocionesChart = new Chart(document.getElementById('emocionesChart'), {
     type: 'bar',
-    data: { labels: fechasE, datasets: emocionesDatasets },
+    data: { labels: fechasE, datasets: emoDatasets },
     options: {
       plugins: {
         title: { display: true, text: `Emociones diarias de ${nombre}` },
-        tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y} veces` } }
+        tooltip: { callbacks: { label: c => `${c.dataset.label}: ${c.parsed.y} veces` } }
       },
-      scales: {
-        x: { title: { display: true, text: 'Fecha' } },
-        y: { beginAtZero: true, title: { display: true, text: 'Frecuencia' }, ticks: { stepSize: 1, precision: 0 } }
-      }
+      scales: { x: { title: { display: true, text: 'Fecha' } },
+                y: { beginAtZero: true, title: { display: true, text: 'Frecuencia' } } }
     }
   });
 
-  // 🌊 TÉCNICAS POR DÍA
-  const tecnicasAgr = agruparPorDiaYCategoria(tecnicas, 'tecnica');
-  const fechasT = Object.keys(tecnicasAgr).sort();
-  const tiposTec = [...new Set(tecnicas.map(t => t.tecnica))];
-  const tecnicasDatasets = tiposTec.map(t => ({
-    label: t, data: fechasT.map(f => tecnicasAgr[f][t] || 0),
-    backgroundColor: coloresTecnicas[t] || '#B3E5FC'
+  // --- TÉCNICAS ---
+  const tecAgr = agruparPorDiaYCategoria(tecnicas, 'tecnica');
+  const fechasT = Object.keys(tecAgr).sort();
+  const tiposT = [...new Set(tecnicas.map(t => t.tecnica))];
+  const tecDatasets = tiposT.map(t => ({
+    label: t, data: fechasT.map(f => tecAgr[f][t] || 0), backgroundColor: getColor()
   }));
-
   const tecnicasChart = new Chart(document.getElementById('tecnicasChart'), {
     type: 'bar',
-    data: { labels: fechasT, datasets: tecnicasDatasets },
+    data: { labels: fechasT, datasets: tecDatasets },
     options: {
       plugins: {
         title: { display: true, text: `Técnicas realizadas por ${nombre}` },
-        tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y} veces` } }
+        tooltip: { callbacks: { label: c => `${c.dataset.label}: ${c.parsed.y} veces` } }
       },
-      scales: {
-        x: { title: { display: true, text: 'Fecha' } },
-        y: { beginAtZero: true, title: { display: true, text: 'Frecuencia' }, ticks: { stepSize: 1, precision: 0 } }
-      }
+      scales: { x: { title: { display: true, text: 'Fecha' } },
+                y: { beginAtZero: true, title: { display: true, text: 'Frecuencia' } } }
     }
   });
 
-  // 📚 HISTORIAS POR DÍA
-  const historiasAgr = agruparPorDiaYCategoria(historias, 'historiaId');
-  const fechasH = Object.keys(historiasAgr).sort();
-  const tiposHis = [...new Set(historias.map(h => h.historiaId))];
-  const historiasDatasets = tiposHis.map(h => ({
-    label: h, data: fechasH.map(f => historiasAgr[f][h] || 0),
-    backgroundColor: coloresHistorias[h] || '#CCC'
+  // --- HISTORIAS ---
+  const hisAgr = agruparPorDiaYCategoria(historias, 'historiaId');
+  const fechasH = Object.keys(hisAgr).sort();
+  const tiposH = [...new Set(historias.map(h => h.historiaId))];
+  const hisDatasets = tiposH.map(h => ({
+    label: h, data: fechasH.map(f => hisAgr[f][h] || 0), backgroundColor: getColor()
   }));
-
   const historiasChart = new Chart(document.getElementById('historiasChart'), {
     type: 'bar',
-    data: { labels: fechasH, datasets: historiasDatasets },
+    data: { labels: fechasH, datasets: hisDatasets },
     options: {
       plugins: {
         title: { display: true, text: `Historias vistas por ${nombre}` },
-        tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y} veces` } }
+        tooltip: { callbacks: { label: c => `${c.dataset.label}: ${c.parsed.y} veces` } }
       },
-      scales: {
-        x: { title: { display: true, text: 'Fecha' } },
-        y: { beginAtZero: true, title: { display: true, text: 'Frecuencia' }, ticks: { stepSize: 1, precision: 0 } }
-      }
+      scales: { x: { title: { display: true, text: 'Fecha' } },
+                y: { beginAtZero: true, title: { display: true, text: 'Frecuencia' } } }
     }
   });
 
-  // 💬 CAUSAS
-  const causasValidas = emociones.filter(e => e.causa && e.causa.trim() !== '');
+  // --- CAUSAS ---
+  const causasValidas = emociones.filter(e => e.causa && e.causa.trim());
   if (causasValidas.length > 0) {
-    const causasCount = agruparPorDosCampos(causasValidas, 'emocion', 'causa');
-    const causasLabels = Object.keys(causasCount);
+    const causasAgr = agruparPorDiaYDosCampos(causasValidas, 'emocion', 'causa');
+    const fechasC = Object.keys(causasAgr).sort();
+    const tiposC = [...new Set(causasValidas.map(e => `${e.emocion} - ${e.causa}`))];
+    const causasDatasets = tiposC.map(c => ({
+      label: c, data: fechasC.map(f => causasAgr[f][c] || 0), backgroundColor: getColor()
+    }));
     const causasChart = new Chart(document.getElementById('causasChart'), {
       type: 'bar',
-      data: { labels: causasLabels, datasets: [{ label: 'Causas', data: Object.values(causasCount), backgroundColor: '#F8C471' }] },
+      data: { labels: fechasC, datasets: causasDatasets },
       options: {
         plugins: {
           title: { display: true, text: `Causas asociadas a emociones de ${nombre}` },
-          tooltip: { callbacks: { label: ctx => `${ctx.label}: ${ctx.parsed.y} veces` } }
+          tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y} veces` } }
         },
-        indexAxis: 'y',
-        scales: { x: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 } } }
+        scales: { x: { title: { display: true, text: 'Fecha' } },
+                  y: { beginAtZero: true, title: { display: true, text: 'Frecuencia' } } }
       }
     });
     window.graficas.push(causasChart);
   }
 
-  // 💡 RESPUESTAS
-  const respuestasValidas = historias.filter(h => h.respuesta && h.respuesta.trim() !== '');
+  // --- RESPUESTAS ---
+  const respuestasValidas = historias.filter(h => h.respuesta && h.respuesta.trim());
   if (respuestasValidas.length > 0) {
-    const respuestasCount = agruparPorDosCampos(respuestasValidas, 'historiaId', 'respuesta');
-    const respuestasLabels = Object.keys(respuestasCount);
+    const respAgr = agruparPorDiaYDosCampos(respuestasValidas, 'historiaId', 'respuesta');
+    const fechasR = Object.keys(respAgr).sort();
+    const tiposR = [...new Set(respuestasValidas.map(h => `${h.historiaId} - ${h.respuesta}`))];
+    const respDatasets = tiposR.map(r => ({
+      label: r, data: fechasR.map(f => respAgr[f][r] || 0), backgroundColor: getColor()
+    }));
     const respuestasChart = new Chart(document.getElementById('respuestasChart'), {
       type: 'bar',
-      data: { labels: respuestasLabels, datasets: [{ label: 'Respuestas', data: Object.values(respuestasCount), backgroundColor: '#AED6F1' }] },
+      data: { labels: fechasR, datasets: respDatasets },
       options: {
         plugins: {
           title: { display: true, text: `Respuestas dadas en historias por ${nombre}` },
-          tooltip: { callbacks: { label: ctx => `${ctx.label}: ${ctx.parsed.y} veces` } }
+          tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y} veces` } }
         },
-        indexAxis: 'y',
-        scales: { x: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 } } }
+        scales: { x: { title: { display: true, text: 'Fecha' } },
+                  y: { beginAtZero: true, title: { display: true, text: 'Frecuencia' } } }
       }
     });
     window.graficas.push(respuestasChart);
@@ -260,7 +247,7 @@ function renderGraficas(emociones, tecnicas, historias, nombre) {
   window.graficas.push(emocionesChart, tecnicasChart, historiasChart);
 }
 
-// Botones
+// === BOTONES ===
 document.getElementById('logoutBtn').addEventListener('click', () => {
   localStorage.clear();
   window.location.href = 'index.html';
@@ -271,6 +258,7 @@ document.getElementById('asociarBtn').addEventListener('click', () => {
 
 obtenerTutelados();
 </script>
+
 
 
 </body>
