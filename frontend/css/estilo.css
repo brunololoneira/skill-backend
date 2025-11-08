@@ -196,14 +196,21 @@ footer {
 /* === Diseño horizontal de las gráficas === */
 .graphics-row {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: space-around;
+  overflow-x: auto;
+  gap: 20px;
+  scroll-snap-type: x mandatory;
+  padding: 10px;
 }
 
 .grafica {
-  flex: 1;
-  margin: 1rem;
+  flex: 0 0 500px;
+  scroll-snap-align: center;
 }
+
+canvas {
+  height: 300px !important;
+}
+
 
 .card {
   background-color: #ffffff;
