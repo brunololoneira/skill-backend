@@ -31,14 +31,21 @@
         <h3>Historias reproducidas</h3>
         <canvas id="historiasChart"></canvas>
       </div>
+
+      <div class="card grafica">
+        <h3>Causas de emoción</h3>
+        <canvas id="causasChart"></canvas>
+      </div>
+
+      <div class="card grafica">
+        <h3>Respuestas historias</h3>
+        <canvas id="respuestasChart"></canvas>
+      </div>
     </div>
     
     <button id="logoutBtn" class="login-btn">Cerrar sesión</button>
     <button id="asociarBtn" class="login-btn">Asociar tutelado</button>
   </div>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
@@ -105,7 +112,8 @@ async function cargarEstadisticasTutelado(idTutelado, nombreTutelado, elemento) 
 function agruparPorDiaYCategoria(datos, categoriaKey) {
   const agrupado = {};
   datos.forEach(d => {
-    const fecha = new Date(d.timestamp).toISOString().split('T')[0]; // YYYY-MM-DD
+    if (!d.timestamp) return;
+    const fecha = new Date(d.timestamp).toISOString().split('T')[0];
     if (!agrupado[fecha]) agrupado[fecha] = {};
     const cat = d[categoriaKey];
     agrupado[fecha][cat] = (agrupado[fecha][cat] || 0) + 1;
@@ -127,25 +135,23 @@ function renderGraficas(emociones, tecnicas, historias, nombre) {
   if (window.graficas) window.graficas.forEach(g => g.destroy());
   window.graficas = [];
 
-  // 🎨 Paletas de colores
   const coloresEmociones = { alegre: '#FF9999', triste: '#FFD966', enfadado: '#9AD0F5' };
   const coloresHistorias = {
-    'Me han gritado': '#C39BD3',
-    'Me han empujado': '#AF7AC5',
-    'Se han reído de mí': '#D2B4DE',
-    'Me han ignorado': '#EBDEF0',
-    'Me han quitado algo': '#E8DAEF'
+    'Me han gritado': '#C39BD3', 'Me han empujado': '#AF7AC5',
+    'Se han reído de mí': '#D2B4DE', 'Me han ignorado': '#EBDEF0', 'Me han quitado algo': '#E8DAEF'
+  };
+  const coloresTecnicas = {
+    'Respiración guiada': '#82E0AA', 'Sonido de olas': '#5DADE2',
+    'Sonido de lluvia': '#AED6F1', 'Visualización relajante': '#A3E4D7'
   };
 
-  // --- 🧠 EMOCIONES AGRUPADAS POR DÍA ---
-  const emocionesAgrupadas = agruparPorDiaYCategoria(emociones, 'emocion');
-  const fechasE = Object.keys(emocionesAgrupadas).sort();
-  const tiposEmocion = [...new Set(emociones.map(e => e.emocion))];
-
-  const emocionesDatasets = tiposEmocion.map(emocion => ({
-    label: emocion,
-    data: fechasE.map(f => emocionesAgrupadas[f][emocion] || 0),
-    backgroundColor: coloresEmociones[emocion] || '#CCC'
+  // 🧠 EMOCIONES POR DÍA
+  const emocionesAgr = agruparPorDiaYCategoria(emociones, 'emocion');
+  const fechasE = Object.keys(emocionesAgr).sort();
+  const tiposEmo = [...new Set(emociones.map(e => e.emocion))];
+  const emocionesDatasets = tiposEmo.map(e => ({
+    label: e, data: fechasE.map(f => emocionesAgr[f][e] || 0),
+    backgroundColor: coloresEmociones[e] || '#CCC'
   }));
 
   const emocionesChart = new Chart(document.getElementById('emocionesChart'), {
@@ -163,34 +169,37 @@ function renderGraficas(emociones, tecnicas, historias, nombre) {
     }
   });
 
-  // --- 🧩 TÉCNICAS (barras simples)
-  const tecnicasCount = {};
-  tecnicas.forEach(t => tecnicasCount[t.tecnica] = (tecnicasCount[t.tecnica] || 0) + 1);
-  const tecnicasLabels = Object.keys(tecnicasCount);
+  // 🌊 TÉCNICAS POR DÍA
+  const tecnicasAgr = agruparPorDiaYCategoria(tecnicas, 'tecnica');
+  const fechasT = Object.keys(tecnicasAgr).sort();
+  const tiposTec = [...new Set(tecnicas.map(t => t.tecnica))];
+  const tecnicasDatasets = tiposTec.map(t => ({
+    label: t, data: fechasT.map(f => tecnicasAgr[f][t] || 0),
+    backgroundColor: coloresTecnicas[t] || '#B3E5FC'
+  }));
+
   const tecnicasChart = new Chart(document.getElementById('tecnicasChart'), {
     type: 'bar',
-    data: {
-      labels: tecnicasLabels,
-      datasets: [{ label: 'Técnicas', data: Object.values(tecnicasCount), backgroundColor: '#82E0AA' }]
-    },
+    data: { labels: fechasT, datasets: tecnicasDatasets },
     options: {
       plugins: {
         title: { display: true, text: `Técnicas realizadas por ${nombre}` },
-        legend: { display: false }
+        tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y} veces` } }
       },
-      scales: { y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 } } }
+      scales: {
+        x: { title: { display: true, text: 'Fecha' } },
+        y: { beginAtZero: true, title: { display: true, text: 'Frecuencia' }, ticks: { stepSize: 1, precision: 0 } }
+      }
     }
   });
 
-  // --- 📚 HISTORIAS AGRUPADAS POR DÍA ---
-  const historiasAgrupadas = agruparPorDiaYCategoria(historias, 'historiaId');
-  const fechasH = Object.keys(historiasAgrupadas).sort();
-  const tiposHistoria = [...new Set(historias.map(h => h.historiaId))];
-
-  const historiasDatasets = tiposHistoria.map(historia => ({
-    label: historia,
-    data: fechasH.map(f => historiasAgrupadas[f][historia] || 0),
-    backgroundColor: coloresHistorias[historia] || '#CCC'
+  // 📚 HISTORIAS POR DÍA
+  const historiasAgr = agruparPorDiaYCategoria(historias, 'historiaId');
+  const fechasH = Object.keys(historiasAgr).sort();
+  const tiposHis = [...new Set(historias.map(h => h.historiaId))];
+  const historiasDatasets = tiposHis.map(h => ({
+    label: h, data: fechasH.map(f => historiasAgr[f][h] || 0),
+    backgroundColor: coloresHistorias[h] || '#CCC'
   }));
 
   const historiasChart = new Chart(document.getElementById('historiasChart'), {
@@ -208,67 +217,41 @@ function renderGraficas(emociones, tecnicas, historias, nombre) {
     }
   });
 
-  // --- 💬 CAUSAS (si existen)
+  // 💬 CAUSAS
   const causasValidas = emociones.filter(e => e.causa && e.causa.trim() !== '');
   if (causasValidas.length > 0) {
     const causasCount = agruparPorDosCampos(causasValidas, 'emocion', 'causa');
     const causasLabels = Object.keys(causasCount);
     const causasChart = new Chart(document.getElementById('causasChart'), {
       type: 'bar',
-      data: {
-        labels: causasLabels,
-        datasets: [{
-          label: 'Causas registradas',
-          data: Object.values(causasCount),
-          backgroundColor: '#F8C471'
-        }]
-      },
+      data: { labels: causasLabels, datasets: [{ label: 'Causas', data: Object.values(causasCount), backgroundColor: '#F8C471' }] },
       options: {
         plugins: {
           title: { display: true, text: `Causas asociadas a emociones de ${nombre}` },
-          tooltip: {
-            callbacks: {
-              label: ctx => `${ctx.label}: ${ctx.parsed.y} veces`
-            }
-          }
+          tooltip: { callbacks: { label: ctx => `${ctx.label}: ${ctx.parsed.y} veces` } }
         },
         indexAxis: 'y',
-        scales: {
-          x: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 } }
-        }
+        scales: { x: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 } } }
       }
     });
     window.graficas.push(causasChart);
   }
 
-  // --- 💡 RESPUESTAS (si existen)
+  // 💡 RESPUESTAS
   const respuestasValidas = historias.filter(h => h.respuesta && h.respuesta.trim() !== '');
   if (respuestasValidas.length > 0) {
     const respuestasCount = agruparPorDosCampos(respuestasValidas, 'historiaId', 'respuesta');
     const respuestasLabels = Object.keys(respuestasCount);
     const respuestasChart = new Chart(document.getElementById('respuestasChart'), {
       type: 'bar',
-      data: {
-        labels: respuestasLabels,
-        datasets: [{
-          label: 'Respuestas registradas',
-          data: Object.values(respuestasCount),
-          backgroundColor: '#AED6F1'
-        }]
-      },
+      data: { labels: respuestasLabels, datasets: [{ label: 'Respuestas', data: Object.values(respuestasCount), backgroundColor: '#AED6F1' }] },
       options: {
         plugins: {
           title: { display: true, text: `Respuestas dadas en historias por ${nombre}` },
-          tooltip: {
-            callbacks: {
-              label: ctx => `${ctx.label}: ${ctx.parsed.y} veces`
-            }
-          }
+          tooltip: { callbacks: { label: ctx => `${ctx.label}: ${ctx.parsed.y} veces` } }
         },
         indexAxis: 'y',
-        scales: {
-          x: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 } }
-        }
+        scales: { x: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 } } }
       }
     });
     window.graficas.push(respuestasChart);
