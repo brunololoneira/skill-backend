@@ -196,38 +196,47 @@ footer {
 /* === Diseño horizontal de las gráficas === */
 /* === Gráficas con scroll horizontal sin romper diseño === */
 
-.graphics-row {
+.graphics-container {
   display: flex;
-  overflow-x: auto;
-  overflow-y: hidden; /* evita que aparezca scroll vertical dentro */
+  flex-direction: column;
+  align-items: center;
   gap: 30px;
-  padding: 20px;
-  scroll-snap-type: x mandatory;
-  scroll-behavior: smooth;
-  max-width: 100%;
+  width: 100%;
+  padding: 10px 0;
   box-sizing: border-box;
 }
 
-.grafica {
-  flex: 0 0 480px; /* ancho fijo para cada tarjeta */
-  min-height: 380px; /* altura visible cómoda */
-  scroll-snap-align: center;
+.graphics-row {
+  display: flex;
+  justify-content: center;
+  flex-wrap: nowrap;
+  gap: 30px;
+  width: 100%;
+  max-width: 1400px;
+}
+
+.center-row {
+  justify-content: center; /* centra las 2 gráficas inferiores */
+}
+
+.card.grafica {
+  background-color: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  padding: 1.5rem;
+  transition: transform 0.2s ease;
+  width: 400px;        /* tamaño uniforme */
+  min-height: 360px;
+}
+
+.card.grafica:hover {
+  transform: scale(1.02);
 }
 
 .grafica canvas {
   width: 100% !important;
   height: 300px !important;
 }
-
-/* Para asegurar que la fila de gráficas no se superponga al resto */
-.card {
-  flex-shrink: 0;
-}
-
-body {
-  overflow-x: hidden; /* evita que el body cree un scroll global */
-}
-
 
 
 .card {

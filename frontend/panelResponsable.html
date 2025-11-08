@@ -16,33 +16,40 @@
 
     <h2>Estadísticas del tutelado seleccionado</h2>
 
-    <div class="graphics-row">
+<div class="graphics-container">
+  <!-- FILA 1 -->
+  <div class="graphics-row">
     <div class="card grafica">
       <h3>Emociones registradas</h3>
       <canvas id="emocionesChart"></canvas>
-      </div>
-
-      <div class="card grafica">
-        <h3>Técnicas utilizadas</h3>
-        <canvas id="tecnicasChart"></canvas>
-      </div>
-
-      <div class="card grafica">
-        <h3>Historias reproducidas</h3>
-        <canvas id="historiasChart"></canvas>
-      </div>
-
-      <div class="card grafica">
-        <h3>Causas de emoción</h3>
-        <canvas id="causasChart"></canvas>
-      </div>
-
-      <div class="card grafica">
-        <h3>Respuestas historias</h3>
-        <canvas id="respuestasChart"></canvas>
-      </div>
     </div>
-    
+
+    <div class="card grafica">
+      <h3>Técnicas utilizadas</h3>
+      <canvas id="tecnicasChart"></canvas>
+    </div>
+
+    <div class="card grafica">
+      <h3>Historias reproducidas</h3>
+      <canvas id="historiasChart"></canvas>
+    </div>
+  </div>
+
+  <!-- FILA 2 -->
+  <div class="graphics-row center-row">
+    <div class="card grafica">
+      <h3>Causas de emoción</h3>
+      <canvas id="causasChart"></canvas>
+    </div>
+
+    <div class="card grafica">
+      <h3>Respuestas historias</h3>
+      <canvas id="respuestasChart"></canvas>
+    </div>
+  </div>
+</div>
+
+
     <button id="logoutBtn" class="login-btn">Cerrar sesión</button>
     <button id="asociarBtn" class="login-btn">Asociar tutelado</button>
   </div>
