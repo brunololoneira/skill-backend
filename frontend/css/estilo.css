@@ -21,12 +21,12 @@ body {
 }
 
 .logo {
-  width: 600px;
+  width: 450px;
   max-width: 80%;
 }
 
 .illustration {
-  width: 600px;
+  width: 500px;
   max-width: 90%;
   margin-bottom: 40px;
 }
@@ -41,7 +41,7 @@ body {
 }
 
 .button-img {
-  width: 280px;                  
+  width: 260px;                  
   cursor: pointer;
   transition: transform 0.2s ease, filter 0.2s ease;
 }
@@ -52,7 +52,7 @@ body {
 }
 
 footer {
-  font-size: 0.9rem;
+  font-size: 0.7rem;
   color: #4b4b4b;
   margin-top: 40px;
 }
@@ -61,6 +61,11 @@ footer {
   opacity: 0;
   transform: translateY(20px);
   animation: fadeUp 0.8s ease forwards;
+}
+
+.logo-Uniovi{
+  width: 80px;
+  height: 50px;
 }
 
 @keyframes fadeUp {
@@ -169,6 +174,7 @@ footer {
   transform: scale(1.05);
 }
 
+
 /* Enlace de volver */
 .enlace-simple {
   display: block;
@@ -266,8 +272,10 @@ footer {
 }
 
 
-@-moz-document url-prefix() {
-  body {
-    zoom: 0.8; /* o 0.9 según necesites */
-  }
+body.panel-responsable {
+  display: block !important;
+  height: auto !important;
+  justify-content: unset !important;
+  align-items: unset !important;
+  transform: scale(0.67);
 }
